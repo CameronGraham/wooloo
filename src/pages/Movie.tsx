@@ -67,7 +67,7 @@ export const Movie = () => {
   }
 
   const renderPlayer = (movie: MovieSearchType) => {
-    let vidUrl = `https://vidsrc.me/embed/${movie.imdbID}`
+    let vidUrl = `https://vidsrc.to/embed`
 
     if (movie.Type === 'series') {
       const season = searchParams.get('s')
@@ -75,7 +75,10 @@ export const Movie = () => {
       if (!season || !episode) {
         return null
       }
-      vidUrl += `/${season}-${episode}`
+      vidUrl += `/tv/${movie.imdbID}/${season}/${episode}`
+    }
+    if (movie.Type === 'movie'){
+      vidUrl += '/movie/${movie.imdbID}'
     }
 
     return (
