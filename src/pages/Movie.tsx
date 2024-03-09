@@ -10,10 +10,12 @@ export const Movie = () => {
   const { episodes, omdbRes, getById, getByIdAndSeason } = useOmdbApi();
 
   const [searchParams, setSearchParams] = useSearchParams();
+  // eslint-disable-next-line
   const [watchedStatusState, setWatchedStatusState] = useState<{ [key: string]: string }>({});
 
   const movie = omdbRes?.[0];
-
+  
+// eslint-disable-next-line
   const setWatchedStatus = (status: string) => {
     const season = searchParams.get('s') ?? 1;
     const episode = searchParams.get('e') ?? 1;
