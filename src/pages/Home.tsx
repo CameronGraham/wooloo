@@ -1,39 +1,39 @@
-import React, { useState, useEffect } from 'react'
-import { CgSearch } from 'react-icons/cg'
-import { Input } from 'components/Input'
-import { MovieResult, MovieResultType } from 'components/MovieResult'
-import { useOmdbApi } from 'hooks/useOmdbApi'
+import React, { useState, useEffect } from 'react';
+import { CgSearch } from 'react-icons/cg';
+import { Input } from 'components/Input';
+import { MovieResult, MovieResultType } from 'components/MovieResult';
+import { useOmdbApi } from 'hooks/useOmdbApi';
 
 export const HomePage = () => {
-  const [searchVal, setSearchVal] = useState<string>('')
-  const { omdbRes, searchOmdb } = useOmdbApi()
-  const [watchedShows, setWatchedShows] = useState<MovieResultType[]>([])
+  const [searchVal, setSearchVal] = useState<string>('');
+  const { omdbRes, searchOmdb } = useOmdbApi();
+  const [watchedShows, setWatchedShows] = useState<MovieResultType[]>([]);
 
   useEffect(() => {
-    const storedWatchedShows = localStorage.getItem('watchedShows')
+    const storedWatchedShows = localStorage.getItem('watchedShows');
     if (storedWatchedShows) {
-      setWatchedShows(JSON.parse(storedWatchedShows))
+      setWatchedShows(JSON.parse(storedWatchedShows));
     }
-  }, [])
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchVal(e.target.value)
-  }
+    setSearchVal(e.target.value);
+  };
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    searchOmdb(searchVal)
-  }
+    e.preventDefault();
+    searchOmdb(searchVal);
+  };
 
   const handleAddToWatchedShows = (show: MovieResultType) => {
     // Check if the show is already in watchedShows
     if (!watchedShows.some((s) => s.imdbID === show.imdbID)) {
-      const updatedWatchedShows = [show, ...watchedShows.slice(0, 2)]
-      setWatchedShows(updatedWatchedShows)
+      const updatedWatchedShows = [show, ...watchedShows.slice(0, 2)];
+      setWatchedShows(updatedWatchedShows);
 
-      localStorage.setItem('watchedShows', JSON.stringify(updatedWatchedShows))
+      localStorage.setItem('watchedShows', JSON.stringify(updatedWatchedShows));
     }
-  }
+  };
 
   return (
     <section className='p-4'>
@@ -48,12 +48,16 @@ export const HomePage = () => {
       </div>
 
       {/* Last 3 watched shows */}
-      <h3 className='text-2xl font-semibold mb-4'>Last 3 Watched Shows</h3>
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {watchedShows.map((show) => (
-          <MovieResult key={show.imdbID} {...show} />
-        ))}
-      </div>
+      {watchedShows.length > 0 && (
+        <>
+          <h3 className='text-2xl font-semibold mb-4'>Last Watched</h3>
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            {watchedShows.map((show) => (
+              <MovieResult key={show.imdbID} {...show} />
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Conditional rendering of Search Results title */}
       {omdbRes && omdbRes.length > 0 && (
@@ -77,5 +81,5 @@ export const HomePage = () => {
         )}
       </div>
     </section>
-  )
-}
+  );
+};
