@@ -28,20 +28,23 @@ export const MovieResult = ({ Poster, Title, Type, Year, imdbID, onClick }: Movi
   }
 
   return (
-    <div onClick={onClick}> {/* Add onClick handler */}
-      <Link to={imdbID}>
-        <div className='relative my-2 h-60 overflow-hidden rounded bg-slate-300 p-3 shadow text-black'>
-          <div className='flex h-full justify-between'>
-            <img src={Poster} className='h-full' alt={Title} />
-            <div className='mr-auto ml-4 mt-8 '>
-              <h6 className='text-4xl font-thin '>{Title}</h6>
-              <div className=''>({Year})</div>
-              <div className='font-bold opacity-30'>{renderType(Type)}</div>
-            </div>
-           
-          </div>
-        </div>
-      </Link>
+
+<div className="max-w-md mx-auto bg-slate-200 rounded-xl shadow-md overflow-hidden md:max-w-2xl my-3" onClick={onClick}>
+  <Link to={imdbID}>
+  <div className="md:flex">
+    <div className="md:shrink-0">
+      <img className="h-48 w-full object-cover" src={Poster} alt={Title}/>
     </div>
+    <div className="p-8">
+      <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">{renderType(Type)}</div>
+      <div className="block mt-1 text-lg leading-tight font-medium text-black hover:underline">{Title}</div>
+      <p className="mt-2 text-slate-500">({Year})</p>
+    </div>
+  </div>
+  </Link>
+</div>
+
+
+    
   )
 }

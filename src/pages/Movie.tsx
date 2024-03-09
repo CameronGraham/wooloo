@@ -1,84 +1,92 @@
-import React, { useEffect } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { Select } from 'components/Select';
+import { useOmdbApi, MovieSearchType } from 'hooks/useOmdbApi';
 
-import { Select } from 'components/Select'
-import { useOmdbApi, MovieSearchType } from 'hooks/useOmdbApi'
-
-const WATCHED_TIMER = 1000 * 60 * 10 // 10 minutes
+const WATCHED_TIMER = 1000 * 60 * 10; // 10 minutes
 
 export const Movie = () => {
-  const { movieId } = useParams()
-  const { episodes, omdbRes, getById, getByIdAndSeason } = useOmdbApi()
+  const { movieId } = useParams();
+  const { episodes, omdbRes, getById, getByIdAndSeason } = useOmdbApi();
 
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [watchedStatusState, setWatchedStatusState] = useState<{ [key: string]: string }>({});
 
-  const movie = omdbRes?.[0]
+  const movie = omdbRes?.[0];
 
-  const setWatchedStatus = () => {
-    const season = searchParams.get('s') ?? 1
-    const episode = searchParams.get('e') ?? 1
+  const setWatchedStatus = (status: string) => {
+    const season = searchParams.get('s') ?? 1;
+    const episode = searchParams.get('e') ?? 1;
+
     if (movieId && movie?.Type === 'series') {
-      const watchedState = localStorage.getItem(movieId)
-      const watched = watchedState ? JSON.parse(watchedState) : {}
+      const watchedState = localStorage.getItem(movieId);
+      const watched = watchedState ? JSON.parse(watchedState) : {};
 
-      const seasonInfo = watched[season] ?? {}
+      const seasonInfo = watched[season] ?? {};
+      seasonInfo[episode] = !(seasonInfo[episode] ?? false); // Invert the watched status
 
-      seasonInfo[episode] = !seasonInfo[episode] ?? true
+      watched[season] = seasonInfo;
 
-      watched[season] = seasonInfo
+      localStorage.setItem(movieId, JSON.stringify(watched));
 
-      localStorage.setItem(movieId, JSON.stringify(watched))
+      // Update the watched status for the current episode
+      setWatchedStatusState((prevStatus) => {
+        const updatedStatus = { ...prevStatus };
+        updatedStatus[episode] = seasonInfo[episode] ? 'Watched' : 'Not Watched';
+        return updatedStatus;
+      });
     }
-  }
+  };
 
   useEffect(() => {
     if (movieId) {
-      getById(movieId)
+      getById(movieId);
     }
-  }, [movieId])
+  }, [movieId]);
 
   useEffect(() => {
-    let watchedTimeout: string | number | NodeJS.Timeout | undefined
+    let watchedTimeout: string | number | NodeJS.Timeout | undefined;
 
     if (movieId && searchParams.get('s')) {
-      getByIdAndSeason(movieId, searchParams.get('s') ?? '1')
+      getByIdAndSeason(movieId, searchParams.get('s') ?? '1');
     }
 
     if (searchParams.get('s') && searchParams.get('e')) {
+      const currentStatus = renderWatchedStatus(); // Get the current watched status
       watchedTimeout = setTimeout(() => {
-        setWatchedStatus()
-      }, WATCHED_TIMER)
+        setWatchedStatus(currentStatus); // Pass the current status to setWatchedStatus
+      }, WATCHED_TIMER);
     }
 
-    return () => clearTimeout(watchedTimeout)
-  }, [searchParams])
+    return () => clearTimeout(watchedTimeout);
+  }, [searchParams]);
 
   useEffect(() => {
     if (movie?.Type === 'series') {
-      searchParams.set('s', '1')
-      searchParams.set('e', '1')
-      setSearchParams(searchParams)
+      searchParams.set('s', '1');
+      searchParams.set('e', '1');
+      setSearchParams(searchParams);
     }
-  }, [omdbRes])
+  }, [omdbRes]);
 
   const handleSeriesInfo = (key: string) => (e: React.ChangeEvent<HTMLSelectElement>) => {
-    searchParams.set(key, e.target.value)
-    setSearchParams(searchParams)
-  }
+    searchParams.set(key, e.target.value);
+    setSearchParams(searchParams);
+  };
 
   const renderPlayer = (movie: MovieSearchType) => {
-    let vidUrl = `https://vidsrc.to/embed`
+    let vidUrl = `https://vidsrc.to/embed`;
 
     if (movie.Type === 'series') {
-      const season = searchParams.get('s')
-      const episode = searchParams.get('e')
+      const season = searchParams.get('s');
+      const episode = searchParams.get('e');
       if (!season || !episode) {
-        return null
+        return null;
       }
-      vidUrl += `/tv/${movie.imdbID}/${season}/${episode}`
+      vidUrl += `/tv/${movie.imdbID}/${season}/${episode}`;
     }
-    if (movie.Type === 'movie'){
-      vidUrl += '/movie/${movie.imdbID}'
+    if (movie.Type === 'movie') {
+      vidUrl += `/movie/${movie.imdbID}`;
     }
 
     return (
@@ -93,27 +101,27 @@ export const Movie = () => {
           className='absolute left-0 h-full w-full'
         />
       </div>
-    )
-  }
+    );
+  };
 
   const renderWatchedStatus = () => {
-    const watchedState = localStorage.getItem(movieId ?? '')
-    const watched = watchedState ? JSON.parse(watchedState) : {}
+    const watchedState = localStorage.getItem(movieId ?? '');
+    const watched = watchedState ? JSON.parse(watchedState) : {};
 
     if (!watched) {
-      return "Not Watched"
+      return 'Not Watched';
     }
 
-    const season = searchParams.get('s') ?? 1
-    const episode = searchParams.get('e') ?? 1
+    const season = searchParams.get('s') ?? 1;
+    const episode = searchParams.get('e') ?? 1;
 
-    const isWatched = watched[season]?.[episode] 
-    
-    return isWatched ? "Watched" : "Not Watched"
-  }
+    const isWatched = watched[season]?.[episode];
+
+    return isWatched ? 'Watched' : 'Not Watched';
+  };
 
   if (!movie) {
-    return null
+    return null;
   }
 
   return (
@@ -123,8 +131,8 @@ export const Movie = () => {
       </h3>
       {movie.Type === 'series' && (
         <div>
-          <div className='flex items-center'>
-            <div className='flex items-center'>
+          <div className='flex items-center flex-wrap'>
+            <div className='flex items-center mx-2 py-2'>
               <div className='mr-2'>Season: </div>
               <Select
                 value={searchParams.get('s') || '1'}
@@ -134,7 +142,7 @@ export const Movie = () => {
                 onChange={handleSeriesInfo('s')}
               />
             </div>
-            <div className='mx-2 flex items-center'>
+            <div className='flex items-center mx-2 py-2'>
               <div className='mr-2'>Episode: </div>
               <Select
                 value={searchParams.get('e') || '1'}
@@ -146,7 +154,12 @@ export const Movie = () => {
               />
             </div>
             <div>
-            <button className="bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300 pointer" onClick={setWatchedStatus}>{renderWatchedStatus()}</button>
+              <button
+                className='bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300 pointer'
+                onClick={() => setWatchedStatus(renderWatchedStatus())}
+              >
+                {renderWatchedStatus()}
+              </button>
             </div>
           </div>
         </div>
@@ -154,5 +167,5 @@ export const Movie = () => {
 
       {movie && renderPlayer(movie)}
     </div>
-  )
-}
+  );
+};
