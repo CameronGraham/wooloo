@@ -7,15 +7,15 @@ const WATCHED_TIMER = 1000 * 60 * 10; // 10 minutes
 
 export const Movie = () => {
   const { movieId } = useParams();
-  const { episodes, omdbRes, getById, getByIdAndSeason } = useOmdbApi();
+  const { omdbRes, getById, getByIdAndSeason, episodes } = useOmdbApi(); // Assuming the episodes data is available
 
   const [searchParams, setSearchParams] = useSearchParams();
-  // eslint-disable-next-line
+  // eslint-disable-next-line 
   const [watchedStatusState, setWatchedStatusState] = useState<{ [key: string]: string }>({});
 
   const movie = omdbRes?.[0];
-  
-// eslint-disable-next-line
+
+  // eslint-disable-next-line 
   const setWatchedStatus = (status: string) => {
     const season = searchParams.get('s') ?? 1;
     const episode = searchParams.get('e') ?? 1;
@@ -122,6 +122,20 @@ export const Movie = () => {
     return isWatched ? 'Watched' : 'Not Watched';
   };
 
+  const isEpisodeWatched = (episodeNumber: number): boolean => {
+    const watchedState = localStorage.getItem(movieId ?? '');
+    const watched = watchedState ? JSON.parse(watchedState) : {};
+
+    if (!watched) {
+      return false;
+    }
+
+    const season = searchParams.get('s') ?? 1;
+    const episode = episodeNumber.toString();
+
+    return watched[season]?.[episode];
+  };
+
   if (!movie) {
     return null;
   }
@@ -148,9 +162,9 @@ export const Movie = () => {
               <div className='mr-2'>Episode: </div>
               <Select
                 value={searchParams.get('e') || '1'}
-                options={Array.from({ length: episodes?.length ?? 1 }, (_, i) => ({
-                  value: `${i + 1}`,
-                  label: `${i + 1} - ${episodes?.[i]?.Title}`,
+                options={(episodes || []).map((episode, index) => ({
+                  value: `${index + 1}`,
+                  label: `${index + 1} - ${episode.Title} (${isEpisodeWatched(index + 1) ? '✔️' : '❌'})`,
                 }))}
                 onChange={handleSeriesInfo('e')}
               />
