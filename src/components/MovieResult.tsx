@@ -26,8 +26,9 @@ export const MovieResult = ({ Poster, Title, Type, Year, imdbID, onClick }: Movi
         return 'Unknown';
     }
   }
-
+  console.log(Title, Type, Year, imdbID)
   return (
+
 
 <div className="max-w-md mx-auto bg-slate-200 rounded-xl shadow-md overflow-hidden md:max-w-2xl my-3" onClick={onClick}>
   <Link to={imdbID}>
