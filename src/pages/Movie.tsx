@@ -10,12 +10,23 @@ export const Movie = () => {
   const { omdbRes, getById, getByIdAndSeason, episodes } = useOmdbApi(); // Assuming the episodes data is available
 
   const [searchParams, setSearchParams] = useSearchParams();
-  // eslint-disable-next-line 
+  // eslint-disable-next-line
   const [watchedStatusState, setWatchedStatusState] = useState<{ [key: string]: string }>({});
+  const [selectedProvider, setSelectedProvider] = useState<string>('vidsrc.me');
 
   const movie = omdbRes?.[0];
 
-  // eslint-disable-next-line 
+  const providers: Record<string, string | { url: string; format?: string }> = {
+    'vidsrc.me': 'https://vidsrc.me/embed/tv',
+    'vidsrc.to': 'https://vidsrc.to/embed/tv',
+    'superembed.stream': { url: 'https://multiembed.mov', format: '?video_id={video_id}&s={s}&e={e}' },
+    // Add other providers here
+  };
+// eslint-disable-next-line
+  const handleChangeProvider = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedProvider(e.target.value);
+  };
+// eslint-disable-next-line
   const setWatchedStatus = (status: string) => {
     const season = searchParams.get('s') ?? 1;
     const episode = searchParams.get('e') ?? 1;
@@ -77,7 +88,9 @@ export const Movie = () => {
   };
 
   const renderPlayer = (movie: MovieSearchType) => {
-    let vidUrl = `https://vidsrc.me/embed`;
+    let vidUrl = '';
+
+    const provider = providers[selectedProvider];
 
     if (movie.Type === 'series') {
       const season = searchParams.get('s');
@@ -85,10 +98,17 @@ export const Movie = () => {
       if (!season || !episode) {
         return null;
       }
-      vidUrl += `/tv/${movie.imdbID}/${season}/${episode}`;
-    }
-    if (movie.Type === 'movie') {
-      vidUrl += `/movie/${movie.imdbID}`;
+
+      if (typeof provider === 'string') {
+        vidUrl = `${provider}/${movie.imdbID}/${season}/${episode}`;
+      } else {
+        vidUrl = `${provider.url}/${provider.format ?? ''}`;
+        vidUrl = vidUrl.replace('{video_id}', movie.imdbID)
+                       .replace('{s}', season)
+                       .replace('{e}', episode);
+      }
+    } else if (movie.Type === 'movie' && typeof provider === 'string') {
+      vidUrl = `${provider}/${movie.imdbID}`;
     }
 
     return (
@@ -99,89 +119,109 @@ export const Movie = () => {
           src={vidUrl}
           allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
           allowFullScreen
-          title='Embedded Video'
-          className='absolute left-0 h-full w-full'
-        />
+          title='Embedded Video'          className='absolute left-0 h-full w-full'
+          />
+        </div>
+      );
+    };
+  
+    const renderWatchedStatus = () => {
+      const watchedState = localStorage.getItem(movieId ?? '');
+      const watched = watchedState ? JSON.parse(watchedState) : {};
+  
+      if (!watched) {
+        return 'Not Watched';
+      }
+  
+      const season = searchParams.get('s') ?? 1;
+      const episode = searchParams.get('e') ?? 1;
+  
+      const isWatched = watched[season]?.[episode];
+  
+      return isWatched ? 'Watched' : 'Not Watched';
+    };
+  
+    const isEpisodeWatched = (episodeNumber: number): boolean => {
+      const watchedState = localStorage.getItem(movieId ?? '');
+      const watched = watchedState ? JSON.parse(watchedState) : {};
+  
+      if (!watched) {
+        return false;
+      }
+  
+      const season = searchParams.get('s') ?? 1;
+      const episode = episodeNumber.toString();
+  
+      return watched[season]?.[episode];
+    };
+  
+    if (!movie) {
+      return null;
+    }
+  
+    return (
+      <div>
+        <h3 className='mb-8 text-3xl'>
+          {movie.Title} <span className='text-base uppercase text-slate-400'>({movie.Type})</span>
+        </h3>
+        {movie.Type === 'series' && (
+          <div>
+            <div className='flex items-center flex-wrap'>
+              <div className='flex items-center mx-2 py-2'>
+                <div className='mr-2'>Season: </div>
+                <Select
+                  value={searchParams.get('s') || '1'}
+                  options={Array.from({ length: parseInt(movie?.totalSeasons ?? '1') }, (_, i) => ({
+                    value: `${i + 1}`,
+                  }))}
+                  onChange={handleSeriesInfo('s')}
+                />
+              </div>
+              <div className='flex items-center mx-2 py-2'>
+                <div className='mr-2'>Episode: </div>
+                <Select
+                  value={searchParams.get('e') || '1'}
+                  options={(episodes || []).map((episode, index) => ({
+                    value: `${index + 1}`,
+                    label: `${index + 1} - ${episode.Title} (${isEpisodeWatched(index + 1) ? '✔️' : '❌'})`,
+                  }))}
+                  onChange={handleSeriesInfo('e')}
+                />
+              </div>
+              <div>
+                <button
+                  className='bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300 pointer'
+                  onClick={() => setWatchedStatus(renderWatchedStatus())}
+                >
+                  {renderWatchedStatus()}
+                </button>
+              </div>
+
+
+              <div className='flex items-center mx-2 py-2'>
+                <div className='mr-2'>Provider: </div>
+                <Select
+                  value={selectedProvider}
+                  options={[
+                    { value: 'vidsrc.me', label: 'VidSrc.me' }, //https://vidsrc.me/embed/tv/tt2934286/1/2
+                    { value: 'vidsrc.to', label: 'VidSrc.to' }, //https://vidsrc.to/embed/tv/tt2934286/1/2
+                    { value: 'superembed.stream', label: 'multiembed.mov' }, //https://multiembed.mov/?video_id=tt2934286&s=1&e=2
+                    // Other provider options
+                  ]}
+                  onChange={(e) => setSelectedProvider(e.target.value)}
+                />
+              </div>
+
+
+
+            </div>
+          </div>
+        )}
+  
+        {movie && renderPlayer(movie)}
       </div>
     );
   };
-
-  const renderWatchedStatus = () => {
-    const watchedState = localStorage.getItem(movieId ?? '');
-    const watched = watchedState ? JSON.parse(watchedState) : {};
-
-    if (!watched) {
-      return 'Not Watched';
-    }
-
-    const season = searchParams.get('s') ?? 1;
-    const episode = searchParams.get('e') ?? 1;
-
-    const isWatched = watched[season]?.[episode];
-
-    return isWatched ? 'Watched' : 'Not Watched';
-  };
-
-  const isEpisodeWatched = (episodeNumber: number): boolean => {
-    const watchedState = localStorage.getItem(movieId ?? '');
-    const watched = watchedState ? JSON.parse(watchedState) : {};
-
-    if (!watched) {
-      return false;
-    }
-
-    const season = searchParams.get('s') ?? 1;
-    const episode = episodeNumber.toString();
-
-    return watched[season]?.[episode];
-  };
-
-  if (!movie) {
-    return null;
-  }
-
-  return (
-    <div>
-      <h3 className='mb-8 text-3xl'>
-        {movie.Title} <span className='text-base uppercase text-slate-400'>({movie.Type})</span>
-      </h3>
-      {movie.Type === 'series' && (
-        <div>
-          <div className='flex items-center flex-wrap'>
-            <div className='flex items-center mx-2 py-2'>
-              <div className='mr-2'>Season: </div>
-              <Select
-                value={searchParams.get('s') || '1'}
-                options={Array.from({ length: parseInt(movie?.totalSeasons ?? '1') }, (_, i) => ({
-                  value: `${i + 1}`,
-                }))}
-                onChange={handleSeriesInfo('s')}
-              />
-            </div>
-            <div className='flex items-center mx-2 py-2'>
-              <div className='mr-2'>Episode: </div>
-              <Select
-                value={searchParams.get('e') || '1'}
-                options={(episodes || []).map((episode, index) => ({
-                  value: `${index + 1}`,
-                  label: `${index + 1} - ${episode.Title} (${isEpisodeWatched(index + 1) ? '✔️' : '❌'})`,
-                }))}
-                onChange={handleSeriesInfo('e')}
-              />
-            </div>
-            <div>
-              <button
-                className='bg-gray-100 text-gray-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300 pointer'
-                onClick={() => setWatchedStatus(renderWatchedStatus())}
-              >
-                {renderWatchedStatus()}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {movie && renderPlayer(movie)}
-    </div>
-  );
-};
+  
+  export default Movie;
+  
