@@ -17,8 +17,8 @@ export const Movie = () => {
   const movie = omdbRes?.[0];
 
   const providers: Record<string, string | { url: string; format?: string }> = {
-    'vidsrc.me': 'https://vidsrc.me/embed/tv',
     'vidsrc.to': 'https://vidsrc.to/embed/tv',
+    'vidsrc.me': 'https://vidsrc.me/embed/tv',
     'superembed.stream': { url: 'https://multiembed.mov', format: '?video_id={video_id}&s={s}&e={e}' },
     // Add other providers here
   };
@@ -119,7 +119,7 @@ export const Movie = () => {
           src={vidUrl}
           allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
           allowFullScreen
-          title='Embedded Video'          className='absolute left-0 h-full w-full'
+          title='Embedded Video' className='absolute left-0 h-full w-full'
           />
         </div>
       );
@@ -161,8 +161,8 @@ export const Movie = () => {
   
     return (
       <div>
-        <h3 className='mb-8 text-3xl'>
-          {movie.Title} <span className='text-base uppercase text-slate-400'>({movie.Type})</span>
+        <h3 className='mb-8 text-3xl flex'>
+          {movie.Title} <span className='text-base uppercase text-slate-400 ml-2'>({movie.Type})</span>
         </h3>
         {movie.Type === 'series' && (
           <div>
@@ -198,14 +198,14 @@ export const Movie = () => {
               </div>
 
 
-              <div className='flex items-center mx-2 py-2'>
+              <div className='flex items-center ml-auto py-2'>
                 <div className='mr-2'>Provider: </div>
                 <Select
                   value={selectedProvider}
                   options={[
-                    { value: 'vidsrc.me', label: 'VidSrc.me' }, //https://vidsrc.me/embed/tv/tt2934286/1/2
-                    { value: 'vidsrc.to', label: 'VidSrc.to' }, //https://vidsrc.to/embed/tv/tt2934286/1/2
-                    { value: 'superembed.stream', label: 'multiembed.mov' }, //https://multiembed.mov/?video_id=tt2934286&s=1&e=2
+                    { value: 'vidsrc.to', label: 'vidsrc.to' }, 
+                    { value: 'vidsrc.me', label: 'vidsrc.me' },
+                    { value: 'superembed.stream', label: 'multiembed.mov' },
                     // Other provider options
                   ]}
                   onChange={(e) => setSelectedProvider(e.target.value)}

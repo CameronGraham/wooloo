@@ -19,7 +19,7 @@ const App = () => {
           </ul>   
           <div className='container mx-auto min-h-screen p-2 md:p-8 relative'>
             <Link to={'/'}>
-              <h1 className='cursor-pointer text-5xl font-thin'>🐑 Wooloo</h1>
+              <h1 className='cursor-pointer text-5xl font-thin flex'><div>🐑</div> <span className="ml-4">Wooloo</span></h1>
             </Link>
             <div className='my-8'>
               <Outlet />
