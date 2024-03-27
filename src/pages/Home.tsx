@@ -16,14 +16,20 @@ export const HomePage = () => {
     }
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchVal(e.target.value);
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     searchOmdb(searchVal);
   };
+
+  useEffect(() => {
+    // Scroll to search results when available
+    if (omdbRes && omdbRes.length > 0) {
+      const searchResultsElement = document.getElementById('searchResults');
+      if (searchResultsElement) {
+        searchResultsElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [omdbRes]);
 
   const handleAddToWatchedShows = (show: MovieResultType) => {
     // Check if the show is already in watchedShows
@@ -39,8 +45,8 @@ export const HomePage = () => {
     <section className='p-4'>
       <h3 className='mt-32 mb-12 text-center text-2xl font-semibold'>Search for a movie or show</h3>
       <div className='relative mb-10 text-black'>
-        <form onSubmit={handleSearch}>
-          <Input value={searchVal} onChange={handleChange} placeholder='The Last Of Us...' big />
+        <form onSubmit={handleSubmit}>
+          <Input value={searchVal} onChange={(e) => setSearchVal(e.target.value)} placeholder='The Last Of Us...' big />
           <button type='submit'>
             <CgSearch size='30' className={`${searchVal ? 'text-slate-800' : 'text-slate-400'} absolute right-5 top-3.5`} />
           </button>
@@ -65,7 +71,7 @@ export const HomePage = () => {
       )}
 
       {/* Search results */}
-      <div>
+      <div id="searchResults">
         {omdbRes && (
           <div>
             {omdbRes

@@ -37,7 +37,7 @@ export const MovieResult = ({ Poster, Title, Type, Year, imdbID, onClick }: Movi
       <img className="h-48 w-full object-cover" src={Poster} alt={Title}/>
     </div>
     <div className="p-8">
-      <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">{renderType(Type)}</div>
+      <div className="uppercase tracking-wide text-sm text-cyan-900 font-semibold">{renderType(Type)}</div>
       <div className="block mt-1 text-lg leading-tight font-medium text-black hover:underline">{Title}</div>
       <p className="mt-2 text-slate-500">({Year})</p>
     </div>
