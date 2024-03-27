@@ -77,7 +77,7 @@ export const Movie = () => {
   };
 
   const renderPlayer = (movie: MovieSearchType) => {
-    let vidUrl = `https://vidsrc.to/embed`;
+    let vidUrl = `https://vidsrc.me/embed`;
 
     if (movie.Type === 'series') {
       const season = searchParams.get('s');
