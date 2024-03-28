@@ -12,7 +12,7 @@ export const Movie = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   // eslint-disable-next-line
   const [watchedStatusState, setWatchedStatusState] = useState<{ [key: string]: string }>({});
-  const [selectedProvider, setSelectedProvider] = useState<string>('vidsrc.me');
+  const [selectedProvider, setSelectedProvider] = useState<string>('vidsrc.to');
 
   const movie = omdbRes?.[0];
 
