@@ -41,6 +41,12 @@ export const HomePage = () => {
     }
   };
 
+  const handleRemoveFromWatchedShows = (imdbID: string) => {
+    const updatedWatchedShows = watchedShows.filter((show) => show.imdbID !== imdbID);
+    setWatchedShows(updatedWatchedShows);
+    localStorage.setItem('watchedShows', JSON.stringify(updatedWatchedShows));
+  };
+
   return (
     <section className='p-4'>
       <h3 className='mt-32 mb-12 text-center text-2xl font-semibold'>Search for a movie or show</h3>
@@ -59,7 +65,7 @@ export const HomePage = () => {
           <h3 className='text-2xl font-semibold mb-4'>Last Watched</h3>
           <div className="grid grid-cols-3 gap-4 mb-8">
             {watchedShows.map((show) => (
-              <MovieResult key={show.imdbID} {...show} />
+              <MovieResult key={show.imdbID} {...show} onRemove={() => handleRemoveFromWatchedShows(show.imdbID)} />
             ))}
           </div>
         </>
