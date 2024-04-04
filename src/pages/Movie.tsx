@@ -17,8 +17,8 @@ export const Movie = () => {
   const movie = omdbRes?.[0];
 
   const providers: Record<string, string | { url: string; format?: string }> = {
-    'vidsrc.to': 'https://vidsrc.to/embed/tv',
-    'vidsrc.me': 'https://vidsrc.me/embed/tv',
+    'vidsrc.to': {url: 'https://vidsrc.to/embed', format: '{type}/{video_id}/{s}/{e}'},
+    'vidsrc.me': {url: 'https://vidsrc.me/embed', format: '{type}/{video_id}/{s}/{e}'},
     'superembed.stream': { url: 'https://multiembed.mov', format: '?video_id={video_id}&s={s}&e={e}' },
     // Add other providers here
   };
@@ -91,24 +91,37 @@ export const Movie = () => {
     let vidUrl = '';
 
     const provider = providers[selectedProvider];
+    
 
     if (movie.Type === 'series') {
       const season = searchParams.get('s');
       const episode = searchParams.get('e');
+      const type = 'tv';
       if (!season || !episode) {
         return null;
       }
 
       if (typeof provider === 'string') {
-        vidUrl = `${provider}/${movie.imdbID}/${season}/${episode}`;
+        vidUrl = `${provider}/${type}/${movie.imdbID}/${season}/${episode}`;
       } else {
         vidUrl = `${provider.url}/${provider.format ?? ''}`;
         vidUrl = vidUrl.replace('{video_id}', movie.imdbID)
                        .replace('{s}', season)
-                       .replace('{e}', episode);
+                       .replace('{e}', episode)
+                       .replace('{type}', type);
       }
-    } else if (movie.Type === 'movie' && typeof provider === 'string') {
-      vidUrl = `${provider}/${movie.imdbID}`;
+    } else if (movie.Type === 'movie') {
+      const type = 'movie';
+      if (typeof provider === 'string') {
+        vidUrl = `${provider}/${movie.imdbID}`;
+      } else {
+        vidUrl = `${provider.url}/${provider.format ?? ''}`;
+        vidUrl = vidUrl.replace('{video_id}', movie.imdbID)
+                      .replace('{s}', '')
+                      .replace('{e}', '')
+                      .replace('{type}', type);
+      }
+     
     }
 
     return (
@@ -212,9 +225,26 @@ export const Movie = () => {
                   onChange={(e) => setSelectedProvider(e.target.value)}
                 />
               </div>
+            </div>
+          </div>
+        )}
 
-
-
+        {movie.Type === 'movie' && (
+          <div>
+            <div className='flex items-center flex-wrap'>
+              <div className='flex items-center ml-auto py-2'>
+                <div className='mr-2'>Provider: </div>
+                <Select
+                  value={selectedProvider}
+                  options={[
+                    { value: 'vidsrc.to', label: 'vidsrc.to' }, 
+                    { value: 'vidsrc.me', label: 'vidsrc.me' },
+                    { value: 'superembed.stream', label: 'multiembed.mov' },
+                    // Other provider options
+                  ]}
+                  onChange={(e) => setSelectedProvider(e.target.value)}
+                />
+              </div>
             </div>
           </div>
         )}
