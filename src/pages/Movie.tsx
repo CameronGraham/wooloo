@@ -239,7 +239,7 @@ export const Movie = () => {
                   options={[
                     { value: 'vidsrc.to', label: 'vidsrc.to' }, 
                     { value: 'vidsrc.me', label: 'vidsrc.me' },
-                    { value: 'superembed.stream', label: 'multiembed.mov' },
+                    // { value: 'superembed.stream', label: 'multiembed.mov' },
                     // Other provider options
                   ]}
                   onChange={(e) => setSelectedProvider(e.target.value)}
