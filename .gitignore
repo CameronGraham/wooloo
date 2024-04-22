@@ -25,3 +25,5 @@ yarn-error.log*
 .env
 .firebaserc
 hosting*
+# Sentry Config File
+.sentryclirc
