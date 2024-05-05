@@ -27,3 +27,6 @@ yarn-error.log*
 hosting*
 # Sentry Config File
 .sentryclirc
+
+# Sentry Config File
+.sentryclirc
