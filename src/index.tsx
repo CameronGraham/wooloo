@@ -12,6 +12,11 @@ import * as Sentry from "@sentry/react";
 Sentry.init({
   dsn: "https://767bc03de8f93f21d7e873fafa3a62a4@o4507129654607872.ingest.de.sentry.io/4507203035005008",
   integrations: [
+    new Sentry.BrowserProfilingIntegration(),
+    Sentry.feedbackIntegration({
+      // Additional SDK configuration goes in here, for example:
+      colorScheme: "system",
+    }),
     Sentry.reactRouterV6BrowserTracingIntegration({
       useEffect: React.useEffect,
       useLocation,
