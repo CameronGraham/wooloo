@@ -51,8 +51,6 @@ export const HomePage = () => {
 
     
     <section className='p-4'>
-      <button className="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded" onClick={()=>{throw 'oh no an error'}}> Err </button>
-
       <h3 className='mt-32 mb-12 text-center text-2xl font-semibold'>Search for a movie or show</h3>
       <div className='relative mb-10 text-black'>
         <form onSubmit={handleSubmit}>
