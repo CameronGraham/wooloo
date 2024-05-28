@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Select } from 'components/Select';
 import { useOmdbApi, MovieSearchType } from 'hooks/useOmdbApi';
+import { supabase } from '../supabaseClient';
+import { PostgrestError } from '@supabase/supabase-js';
 
 const WATCHED_TIMER = 1000 * 60 * 10; // 10 minutes
+const ACTIVITY_SUBMISSION_TIMER = 3000; // 60 seconds
 
 export const Movie = () => {
   const { movieId } = useParams();
@@ -13,6 +16,25 @@ export const Movie = () => {
   // eslint-disable-next-line
   const [watchedStatusState, setWatchedStatusState] = useState<{ [key: string]: string }>({});
   const [selectedProvider, setSelectedProvider] = useState<string>('vidsrc.to');
+
+  const [username, setUsername] = useState<string>('');
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem('username');
+    if (storedUsername) {
+      setUsername(storedUsername);
+    } else {
+      const generatedUsername = generateUsername(); // Replace with your username generation logic
+      setUsername(generatedUsername);
+      localStorage.setItem('username', generatedUsername);
+    }
+  }, []);
+
+  // Function to generate a username
+  const generateUsername = () => {
+    // Implement your username generation logic here
+    return 'User' + Math.floor(Math.random() * 1000);
+  };
 
   const movie = omdbRes?.[0];
 
@@ -51,27 +73,74 @@ export const Movie = () => {
     }
   };
 
+  const submitActivity = async () => {
+    try {
+      let activityData: { username: string; currently_watching: string }[] = [];
+  
+      if (movie?.Type === 'series') {
+        const season = searchParams.get('s') ?? '1';
+        const episode = searchParams.get('e') ?? '1'; 
+        
+        activityData = [
+          {
+            username: username,
+            currently_watching: `${movie?.Title} (Season ${season}, Episode ${episode})`,
+          }
+        ];
+      } else if (movie?.Type === 'movie') {
+        activityData = [
+          {
+            username: username,
+            currently_watching: `${movie?.Title}`,
+          }
+        ];
+      }  
+      console.log("Video", movie);
+      console.log("ActivityData", activityData);
+
+      await supabase.from('activity').insert(activityData);
+  
+      console.log('Activity submitted successfully');
+      // eslint-disable-next-line
+    } catch (error: any) {
+      console.error('Error submitting activity:', (error as PostgrestError).message);
+    }
+  };
+
   useEffect(() => {
     if (movieId) {
       getById(movieId);
     }
   }, [movieId]);
 
+
   useEffect(() => {
-    let watchedTimeout: string | number | NodeJS.Timeout | undefined;
+    let watchedTimer: string | number | NodeJS.Timeout | undefined;
+    let notificationTimer: string | number | NodeJS.Timeout | undefined;
 
     if (movieId && searchParams.get('s')) {
       getByIdAndSeason(movieId, searchParams.get('s') ?? '1');
     }
 
     if (searchParams.get('s') && searchParams.get('e')) {
-      const currentStatus = renderWatchedStatus(); // Get the current watched status
-      watchedTimeout = setTimeout(() => {
+      const currentStatus = renderWatchedStatus(); // Get the current watched status      
+      watchedTimer = setTimeout(() => {
         setWatchedStatus(currentStatus); // Pass the current status to setWatchedStatus
-      }, WATCHED_TIMER);
-    }
+      }, WATCHED_TIMER);    
+      
+      notificationTimer = setTimeout(() => {
+        submitActivity();
+      }, ACTIVITY_SUBMISSION_TIMER);
 
-    return () => clearTimeout(watchedTimeout);
+    }else{
+      notificationTimer = setTimeout(() => {
+        submitActivity();
+      }, ACTIVITY_SUBMISSION_TIMER);
+    }
+    return () => {
+      clearTimeout(watchedTimer);
+      clearTimeout(notificationTimer);
+    };
   }, [searchParams]);
 
   useEffect(() => {

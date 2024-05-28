@@ -7,7 +7,7 @@ import { useOmdbApi } from 'hooks/useOmdbApi';
 export const HomePage = () => {
   const [searchVal, setSearchVal] = useState<string>('');
   const { omdbRes, searchOmdb } = useOmdbApi();
-  const [watchedShows, setWatchedShows] = useState<MovieResultType[]>([]);
+  const [watchedShows, setWatchedShows] = useState<MovieResultType[]>([]);   
 
   useEffect(() => {
     const storedWatchedShows = localStorage.getItem('watchedShows');
