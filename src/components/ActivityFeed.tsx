@@ -11,6 +11,7 @@ interface Activity {
 }
 
 const ActivityFeed: React.FC = () => {
+    // eslint-disable-next-line
   const [activity, setActivity] = useState<Activity[]>([]);
 
   useEffect(() => {
