@@ -6,7 +6,7 @@ import { supabase } from '../supabaseClient';
 import { PostgrestError } from '@supabase/supabase-js';
 
 const WATCHED_TIMER = 1000 * 60 * 10; // 10 minutes
-const ACTIVITY_SUBMISSION_TIMER = 3000; // 60 seconds
+const ACTIVITY_SUBMISSION_TIMER = 30000; // 30 seconds
 
 export const Movie = () => {
   const { movieId } = useParams();
