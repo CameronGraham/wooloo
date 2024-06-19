@@ -196,7 +196,7 @@ export const Movie = () => {
     return (
       <div className='relative mt-4 h-0 overflow-hidden' style={{ paddingBottom: '56.25%' }}>
         <iframe
-          sandbox = "allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
+          // sandbox = "allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation"
           width='853'
           height='480'
           src={vidUrl}
